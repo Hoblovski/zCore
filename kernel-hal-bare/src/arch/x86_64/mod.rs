@@ -14,9 +14,13 @@ use {
     uart_16550::SerialPort,
     x86_64::{
         instructions::port::Port,
-        registers::control::{Cr2, Cr3, Cr3Flags, Cr4, Cr4Flags},
+        registers::{
+            control::{Cr2, Cr3, Cr3Flags, Cr4, Cr4Flags},
+            model_specific::GsBase
+        },
         structures::paging::{PageTableFlags as PTF, *},
     },
+    trapframe::gsbase_to_bitmap
 };
 
 mod acpi_table;
@@ -467,6 +471,33 @@ pub fn outpd(port: u16, value: u32) {
 #[export_name = "hal_inpd"]
 pub fn inpd(port: u16) -> u32 {
     unsafe { Port::new(port).read() }
+}
+
+#[export_name = "hal_allow_ioport"]
+pub fn allow_ioport(port: u16) {
+    let gsbase = GsBase::read().as_u64();
+    let port_bitmap = gsbase_to_bitmap(gsbase);
+    let idx = (port >> 3) as usize;
+    let bit = (port & 0xf) as u8;
+    port_bitmap[idx] &= !(1 << bit);
+}
+
+#[export_name = "hal_allowed_ioport"]
+pub fn allowed_ioport(port: u16) -> bool {
+    let gsbase = GsBase::read().as_u64();
+    let port_bitmap = gsbase_to_bitmap(gsbase);
+    let idx = (port >> 3) as usize;
+    let bit = (port & 0xf) as u8;
+    (port_bitmap[idx] >> bit) & 1 == 0
+}
+
+#[export_name = "hal_deny_ioport"]
+pub fn deny_ioport(port: u16) {
+    let gsbase = GsBase::read().as_u64();
+    let port_bitmap = gsbase_to_bitmap(gsbase);
+    let idx = (port >> 3) as usize;
+    let bit = (port & 0xf) as u8;
+    port_bitmap[idx] |= 1 << bit;
 }
 
 /// Flush the physical frame.

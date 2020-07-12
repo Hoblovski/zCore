@@ -6,6 +6,7 @@ use {
     futures::channel::oneshot::{self, Receiver, Sender},
     hashbrown::HashMap,
     spin::Mutex,
+    kernel_hal::{allow_ioport, deny_ioport, allowed_ioport},
 };
 
 /// Process abstraction
@@ -468,6 +469,18 @@ impl Process {
     /// Get KoIDs of Threads.
     pub fn thread_ids(&self) -> Vec<KoID> {
         self.inner.lock().threads.iter().map(|t| t.id()).collect()
+    }
+
+    pub fn allow_ioport(&self, port: u16) {
+        allow_ioport(port);
+    }
+
+    pub fn deny_ioport(&self, port: u16) {
+        deny_ioport(port);
+    }
+
+    pub fn allowed_ioport(&self, port: u16) -> bool {
+        allowed_ioport(port)
     }
 }
 

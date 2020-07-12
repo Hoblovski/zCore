@@ -261,8 +261,7 @@ impl Syscall<'_> {
         let proc = self.thread.proc();
         let resource = proc.get_object::<Resource>(resource)?;
         resource.validate_ranged_resource(ResourceKind::IOPORT, io_addr as usize, len as usize)?;
-        // TODO: mark in proc
-        self.thread.allow_ioport(io_addr);
+        proc.allow_ioport(io_addr);
         Ok(())
     }
 
@@ -279,8 +278,7 @@ impl Syscall<'_> {
         let proc = self.thread.proc();
         let resource = proc.get_object::<Resource>(resource)?;
         resource.validate_ranged_resource(ResourceKind::IOPORT, io_addr as usize, len as usize)?;
-        // TODO: mark in proc
-        self.thread.deny_ioport(io_addr);
+        proc.deny_ioport(io_addr);
         Ok(())
     }
 }

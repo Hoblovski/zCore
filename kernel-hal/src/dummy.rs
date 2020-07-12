@@ -394,7 +394,7 @@ pub fn allow_ioport(_port: u16) {
 
 #[linkage = "weak"]
 #[export_name = "hal_allowed_ioport"]
-pub fn allowed_ioport(_port: u16) -> u64 {
+pub fn allowed_ioport(_port: u16) -> bool {
     unimplemented!()
 }
 
